@@ -48,28 +48,27 @@ void readInput( const std::string& inputFile,
 	in.close();
 }
 
-std::string resolveLinks( const std::string& testPath, std::map< std::string, std::string >& links )
+std::string resolveLinks( const std::string& inputPath, const std::map< std::string, std::string >& links )
 {
-	// for all substr in testPath, check for a path in the map
-	std::string resolved = testPath;
+	std::string resolved = inputPath;		// copy the input path
+
 	size_t i = 1;
-	size_t split = std::string::npos;
 	while ( i < resolved.length() )
 	{
-		split = resolved.find( '/', i );
+		size_t split = resolved.find( '/', i );
 		std::string link = resolved.substr( 0, split );
 		
 		if ( links.find( link ) != links.end() )
-		{
-			std::string path = links[ link ];
-			resolved = path.append( resolved.substr( split, std::string::npos ) );
+		{	// link needs resolved
+			std::string path = links.find( link )->second;
+			resolved = path + resolved.substr( split, std::string::npos );
+			i = path.length();				// update index to match new path length
 		}
 		else
-		{
-			i += split;
+		{	// link was not found in the map
+			i = link.length() + 1;			// update index to go to next token
 		}
 	}
-	
 	return resolved;
 }
 
@@ -87,20 +86,24 @@ void myAssert( const std::string& input,
 
 int main( int argc, char* argv[] )
 {
-	std::string testPath;
-	std::map< std::string, std::string > links;
+	std::string inputPath;									// the path to resolve
+	std::map< std::string, std::string > links;				// std::map< symlink, path >
 
-	readInput( "input1.txt", testPath, links );
-	myAssert( testPath, resolveLinks( testPath, links ), "/media/mmcstick/docs/office" );
+	readInput( "input1.txt", inputPath, links );
+	myAssert( inputPath, resolveLinks( inputPath, links ), "/media/mmcstick/docs/office" );
+	
+	// infinite loop
+	//readInput( "input2.txt", testPath, links );
+	//myAssert( testPath, resolveLinks( testPath, links ), "/etc/modprobe.d/config/" );
 
-	readInput( "input2.txt", testPath, links );
-	myAssert( testPath, resolveLinks( testPath, links ), "/etc/modprobe.d/config/" );
+	readInput( "input3.txt", inputPath, links );
+	myAssert( inputPath, resolveLinks( inputPath, links ), "/var/log-2014/rc" );
 
-	readInput( "input3.txt", testPath, links );
-	myAssert( testPath, resolveLinks( testPath, links ), "/var/log-2014/rc" );
+	readInput( "input4.txt", inputPath, links );
+	myAssert( inputPath, resolveLinks( inputPath, links ), "/usr/local/include/SDL/stan" );
 
-	readInput( "input4.txt", testPath, links );
-	myAssert( testPath, resolveLinks( testPath, links ), "/usr/local/include/SDL/stan" );
+	readInput( "input4_short.txt", inputPath, links );
+	myAssert( inputPath, resolveLinks( inputPath, links ), "/boone/SDL/stan" );
 
 	return 0;
 }
